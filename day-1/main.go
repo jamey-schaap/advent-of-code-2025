@@ -19,8 +19,10 @@ func main() {
 	defer f.Close()
 
 	scanner := bufio.NewScanner(f)
+	var passedZeroCount int
 	pos := 50
-	pwd := 0
+	passwordA := 0
+	passwordB := 0
 	for scanner.Scan() {
 		line := scanner.Text()
 		if len(line) == 0 {
@@ -33,31 +35,36 @@ func main() {
 			panic(err)
 		}
 
-		pos, err = Dial(pos, dir, clicks)
+		pos, passedZeroCount, err = Dial(pos, dir, clicks)
 		if err != nil {
 			panic(err)
 		}
 
 		if pos == 0 {
-			pwd++
+			passwordA++
+			passwordB++
 		}
+		passwordB += passedZeroCount
 	}
 
-	fmt.Printf("Password: %d\n", pwd)
+	fmt.Printf("Password A: %d\n", passwordA)
+	fmt.Printf("Password B: %d\n", passwordB)
 }
 
-func Dial(pos int, dir uint8, clicks int) (int, error) {
+func Dial(pos int, dir uint8, clicks int) (remainder, quotient int, err error) {
 	const amountOfPossibleValues = upperBoundary + 1
 
 	offset := clicks % amountOfPossibleValues
 	switch dir {
 	case 'L':
-		pos = (pos - offset + amountOfPossibleValues) % amountOfPossibleValues
+		quotient += (clicks + amountOfPossibleValues) / amountOfPossibleValues
+		remainder = (pos - offset + amountOfPossibleValues) % amountOfPossibleValues
 	case 'R':
-		pos = (pos + offset) % amountOfPossibleValues
+		quotient = (pos + clicks) / amountOfPossibleValues
+		remainder = (pos + offset) % amountOfPossibleValues
 	default:
-		return 0, fmt.Errorf("unexpected char '%d'", dir)
+		return 0, quotient, fmt.Errorf("unexpected char '%d'", dir)
 	}
 
-	return pos, nil
+	return remainder, quotient, nil
 }
