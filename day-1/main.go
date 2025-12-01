@@ -33,19 +33,31 @@ func main() {
 			panic(err)
 		}
 
-		offset := clicks % (upperBoundary + 1)
-		switch dir {
-		case 'L':
-			pos = (pos - offset) % (upperBoundary + 1)
-		case 'R':
-			pos = (pos + offset) % (upperBoundary + 1)
-		default:
-			panic(fmt.Errorf("unexpected char '%d'", dir))
+		pos, err = Dial(pos, dir, clicks)
+		if err != nil {
+			panic(err)
 		}
+
 		if pos == 0 {
 			pwd++
 		}
 	}
 
 	fmt.Printf("Password: %d\n", pwd)
+}
+
+func Dial(pos int, dir uint8, clicks int) (int, error) {
+	const amountOfPossibleValues = upperBoundary + 1
+
+	offset := clicks % amountOfPossibleValues
+	switch dir {
+	case 'L':
+		pos = (pos - offset + amountOfPossibleValues) % amountOfPossibleValues
+	case 'R':
+		pos = (pos + offset) % amountOfPossibleValues
+	default:
+		return 0, fmt.Errorf("unexpected char '%d'", dir)
+	}
+
+	return pos, nil
 }
