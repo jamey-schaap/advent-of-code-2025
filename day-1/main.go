@@ -52,17 +52,20 @@ func main() {
 }
 
 func Dial(pos int, dir uint8, clicks int) (remainder, quotient int, err error) {
-	const amountOfPossibleValues = upperBoundary + 1
+	const dialSize = upperBoundary + 1
 
-	offset := clicks % amountOfPossibleValues
+	offset := clicks % dialSize
 	switch dir {
 	case 'L':
-		shift := (amountOfPossibleValues - pos) % amountOfPossibleValues
-		quotient = (clicks + shift) / amountOfPossibleValues
-		remainder = (pos - offset + amountOfPossibleValues) % amountOfPossibleValues
+		// shift is the number of left clicks from pos to the next time we land on 0.
+		// For pos != 0 this is dialSize - pos.
+		// For pos == 0 it should be 0 (already at 0), which is why we use (dialSize - pos) % dialSize.
+		shift := (dialSize - pos) % dialSize
+		quotient = (clicks + shift) / dialSize
+		remainder = (pos - offset + dialSize) % dialSize
 	case 'R':
-		quotient = (pos + clicks) / amountOfPossibleValues
-		remainder = (pos + offset) % amountOfPossibleValues
+		quotient = (pos + clicks) / dialSize
+		remainder = (pos + offset) % dialSize
 
 	default:
 		return 0, 0, fmt.Errorf("unexpected char '%d'", dir)
