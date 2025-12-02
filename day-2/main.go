@@ -58,12 +58,12 @@ func GetInvalidIds(r string) []int {
 	idRange := GetRange(start, end+1)
 	invalidIds := Filter(idRange, func(id int) bool {
 		s := strconv.Itoa(id)
-		return !isValidId(s)
+		return !IsValidId(s)
 	})
 	return invalidIds
 }
 
-func isValidId(id string) bool {
+func IsValidId(id string) bool {
 	if len(id) == 0 {
 		return false
 	}
@@ -72,24 +72,51 @@ func isValidId(id string) bool {
 		return false
 	}
 
-	if len(id)%2 != 0 {
-		return true
+	middleIdx := len(id) / 2
+	for size := 1; size <= middleIdx; size++ {
+		if len(id)%size != 0 {
+			continue
+		}
+
+		parts, _ := EvenlySplitString(id, size)
+		if AllEqual(parts...) {
+			return false
+		}
 	}
 
-	middleIdx := len(id) / 2
-	part1 := id[:middleIdx]
-	part2 := id[middleIdx:]
+	return true
+}
 
-	return part1 != part2
+func EvenlySplitString(str string, size int) ([]string, error) {
+	if size == 0 {
+		return nil, fmt.Errorf("invalid size: %d", size)
+	}
+
+	if len(str)%size != 0 {
+		return nil, fmt.Errorf("string of len %d cannot be evenly dived into substrings of len %d", len(str), size)
+	}
+
+	count := len(str) / size
+	var parts []string
+	for i := 0; i < count; i++ {
+		idx := i * size
+		substr := str[idx : idx+size]
+		parts = append(parts, substr)
+	}
+	return parts, nil
 }
 
 func GetRange(start, end int) []int {
+	return GetRangeWithStep(start, end, 1)
+}
+
+func GetRangeWithStep(start, end, step int) []int {
 	if start > end {
 		start, end = end, start
 	}
 
 	r := make([]int, 0, end-start+1)
-	for i := start; i < end; i++ {
+	for i := start; i < end; i += step {
 		r = append(r, i)
 	}
 	return r
@@ -103,4 +130,18 @@ func Filter[T any](items []T, f func(item T) bool) []T {
 		}
 	}
 	return out
+}
+
+func AllEqual[T comparable](values ...T) bool {
+	if len(values) < 2 {
+		return true
+	}
+
+	first := values[0]
+	for _, v := range values[1:] {
+		if v != first {
+			return false
+		}
+	}
+	return true
 }
