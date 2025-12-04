@@ -1,10 +1,23 @@
 package main
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestGetAnswer(t *testing.T) {
+	codes := "987654321111111\n" +
+		"811111111111119\n" +
+		"234234234234278\n" +
+		"818181911112111"
+
+	r := bytes.NewReader([]byte(codes))
+	answer, err := GetAnswer(r)
+	assert.NoError(t, err)
+	assert.Equal(t, 357, answer)
+}
 
 func TestFindHighestNumber(t *testing.T) {
 	actual, err := FindHighestNumber("987654321111111", 2)

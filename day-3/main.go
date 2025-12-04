@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 )
@@ -16,14 +17,26 @@ func main() {
 	}
 	defer f.Close()
 
-	sum, number := 0, 0
-	scanner := bufio.NewScanner(f)
+	answer, err := GetAnswer(f)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(answer)
+}
+
+func GetAnswer(r io.Reader) (sum int, err error) {
+	number := 0
+	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		text := scanner.Text()
 		number, err = FindHighestNumber(text, numberSize)
+		if err != nil {
+			return 0, err
+		}
 		sum += number
 	}
-	fmt.Println(sum)
+
+	return sum, nil
 }
 
 func FindHighestNumber(text string, size int) (int, error) {
