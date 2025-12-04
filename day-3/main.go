@@ -1,71 +1,63 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+)
+
+const numberSize = 2
 
 func main() {
-	//f, err := os.Open("./input.txt")
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer f.Close()
-	//
-	//scanner := bufio.NewScanner(f)
-	//for scanner.Scan() {
-	//	scanner.Text()
-	//}
-	res := FindHighestNumber("1237193", 3)
-	fmt.Println(res)
+	f, err := os.Open("./input.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
 
-	res = FindHighestNumber("12937193", 3)
-	fmt.Println(res)
-	// 72571894
-	// 725
-	// 727
-	// -8
-	// 778
-	// 78...
-	// 8...
-
-	// -9
-	// 789
-	// 89...
-	// 9...
-
-	// from i -> [n] numbers are higher
-	// find the highest i, with [size] numbers to the right
-	// then repeat for x := range [size], then search for [size-1] to the right
-
-	// 3257597823087123
-	//      ^ finds the highest number in the string with at least [size] to the right
-	// 3257597823087123
-	//        ^
-	// 3257597823087123
-	//            ^
-	// does it find the next highest (and first? i.e. ....8....8....)
+	sum, number := 0, 0
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		text := scanner.Text()
+		number, err = FindHighestNumber(text, numberSize)
+		sum += number
+		//fmt.Println(number)
+	}
+	fmt.Println(sum)
 }
 
-func FindHighestNumber(text string, size int) string {
-	if len(text) == size {
-		return text
+func FindHighestNumber(text string, size int) (int, error) {
+	chars := make([]uint8, size)
+	curr := text
+	for i := range size {
+		c, idx, err := FindHighestChar(curr, size-i-1)
+		if err != nil {
+			return 0, err
+		}
+		chars[i] = c
+		curr = curr[idx+1:]
 	}
 
-	highestNumber := make([]int32, size)
+	return strconv.Atoi(string(chars))
+}
 
-	for idxChar, char := range text {
-		for idxHighest, v := range highestNumber {
-			if char <= v {
-				continue
-			}
+func FindHighestChar(text string, rightNeighbours int) (char uint8, idx int, err error) {
+	if len(text) == 0 {
+		return 0, 0, fmt.Errorf("string shouldn't be empty")
+	}
 
-			if idxHighest == 0 && idxChar == len(text)-size {
-				return text[idxChar:]
-			}
+	if len(text) == 1 {
+		return text[0], 0, nil
+	}
 
-			highestNumber[idxHighest] = char
-			// highestNumber[idxHighest+1:] reset all to -1
-			break
+	for i := range text {
+		c := text[i]
+		if i+rightNeighbours <= len(text)-1 && c > char {
+			char = c
+			idx = i
 		}
 	}
 
-	return string(highestNumber)
+	return char, idx, nil
 }
