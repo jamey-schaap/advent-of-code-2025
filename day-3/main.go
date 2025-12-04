@@ -22,7 +22,6 @@ func main() {
 		text := scanner.Text()
 		number, err = FindHighestNumber(text, numberSize)
 		sum += number
-		//fmt.Println(number)
 	}
 	fmt.Println(sum)
 }
