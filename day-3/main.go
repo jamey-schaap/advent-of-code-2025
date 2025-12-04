@@ -63,11 +63,17 @@ func FindHighestChar(text string, rightNeighbours int) (char uint8, idx int, err
 		return text[0], 0, nil
 	}
 
+	const char9 = uint8('9')
 	for i := range text {
 		c := text[i]
-		if i+rightNeighbours <= len(text)-1 && c > char {
-			char = c
-			idx = i
+		if i+rightNeighbours > len(text)-1 || c <= char {
+			continue
+		}
+
+		char = c
+		idx = i
+		if c == char9 {
+			break
 		}
 	}
 
