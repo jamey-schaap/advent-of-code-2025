@@ -14,9 +14,14 @@ func TestGetAnswer(t *testing.T) {
 		"818181911112111"
 
 	r := bytes.NewReader([]byte(codes))
-	answer, err := GetAnswer(r)
+	answer, err := GetAnswer(r, 2)
 	assert.NoError(t, err)
 	assert.Equal(t, 357, answer)
+
+	r = bytes.NewReader([]byte(codes))
+	answer, err = GetAnswer(r, 12)
+	assert.NoError(t, err)
+	assert.Equal(t, 3121910778619, answer)
 }
 
 func TestFindHighestNumber(t *testing.T) {
@@ -34,6 +39,22 @@ func TestFindHighestNumber(t *testing.T) {
 
 	actual, err = FindHighestNumber("818181911112111", 2)
 	assert.Equal(t, 92, actual)
+	assert.NoError(t, err)
+
+	actual, err = FindHighestNumber("987654321111111", 12)
+	assert.Equal(t, 987654321111, actual)
+	assert.NoError(t, err)
+
+	actual, err = FindHighestNumber("811111111111119", 12)
+	assert.Equal(t, 811111111119, actual)
+	assert.NoError(t, err)
+
+	actual, err = FindHighestNumber("234234234234278", 12)
+	assert.Equal(t, 434234234278, actual)
+	assert.NoError(t, err)
+
+	actual, err = FindHighestNumber("818181911112111", 12)
+	assert.Equal(t, 888911112111, actual)
 	assert.NoError(t, err)
 }
 

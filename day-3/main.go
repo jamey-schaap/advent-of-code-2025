@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-const numberSize = 2
+const numberSize = 12
 
 func main() {
 	f, err := os.Open("./input.txt")
@@ -17,14 +17,14 @@ func main() {
 	}
 	defer f.Close()
 
-	answer, err := GetAnswer(f)
+	answer, err := GetAnswer(f, numberSize)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(answer)
 }
 
-func GetAnswer(r io.Reader) (sum int, err error) {
+func GetAnswer(r io.Reader, numberSize int) (sum int, err error) {
 	number := 0
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
