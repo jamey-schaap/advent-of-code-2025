@@ -73,7 +73,7 @@ func FindHighestChar(text string, rightNeighbours int) (char uint8, idx int, err
 		char = c
 		idx = i
 		if c == char9 {
-			break
+			return char, idx, nil
 		}
 	}
 
