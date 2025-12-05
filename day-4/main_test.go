@@ -21,6 +21,6 @@ func TestGetAnswer(t *testing.T) {
 
 	r := bytes.NewReader([]byte(input))
 	answer, err := GetAnswer(r)
-	assert.Equal(t, 13, answer)
+	assert.Equal(t, 43, answer)
 	assert.NoError(t, err)
 }

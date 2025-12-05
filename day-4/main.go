@@ -27,7 +27,15 @@ func GetAnswer(r io.Reader) (int, error) {
 		return 0, err
 	}
 	grid := bytes.Split(b, []byte("\n"))
-	cnt := GetAccessibleCount(grid, 1, 4)
+
+	cnt := 0
+	for {
+		c := GetAccessibleCount(grid, 1, 4)
+		if c == 0 {
+			break
+		}
+		cnt += c
+	}
 	return cnt, nil
 }
 
@@ -54,6 +62,7 @@ func GetAccessibleCount(grid [][]byte, radius, threshold int) int {
 			}
 
 			if cnt < threshold {
+				grid[y][x] = byte('.')
 				accessibleCnt++
 			}
 		}
@@ -67,59 +76,39 @@ type Coordinate struct {
 }
 
 func GetNeighborCoordinates(c Coordinate, radius, maxX, maxY int) []Coordinate {
-	var xs, ys []int
-	for r := range radius {
-		offset := r + 1
-		xs = append(xs, c.x-offset, c.x+offset)
-		ys = append(ys, c.y-offset, c.y+offset)
-	}
-
-	xs = append(xs, c.x)
-	xs = Filter(xs, func(x int) bool {
-		return x >= 0 && x <= maxX
-	})
-
-	ys = append(ys, c.y)
-	ys = Filter(ys, func(y int) bool {
-		return y >= 0 && y <= maxY
-	})
+	xs := MakeAxis(c.x, maxX, radius)
+	ys := MakeAxis(c.y, maxY, radius)
 
 	product := CartesianProduct(xs, ys)
-	coords := make([]Coordinate, len(product)-1)
-	i := 0
+	coords := make([]Coordinate, 0, len(product)-1)
 	for _, p := range product {
-		x := p[0]
-		y := p[1]
-
+		x, y := p[0], p[1]
 		if x == c.x && y == c.y {
 			continue
 		}
-		coords[i] = Coordinate{x, y}
-		i++
+		coords = append(coords, Coordinate{x, y})
 	}
 	return coords
 }
 
-func CartesianProduct[T any](s1, s2 []T) [][]T {
-	capacity := len(s1) * len(s2)
-	product := make([][]T, capacity)
-	i := 0
-
-	for _, v1 := range s1 {
-		for _, v2 := range s2 {
-			product[i] = []T{v1, v2}
-			i++
-		}
-	}
-	return product
-}
-
-func Filter[T any](items []T, f func(T) bool) []T {
-	var out []T
-	for _, item := range items {
-		if f(item) {
-			out = append(out, item)
+func MakeAxis(center, max, radius int) []int {
+	out := make([]int, 0, 2*radius+1)
+	for offset := -radius; offset <= radius; offset++ {
+		v := center + offset
+		if v >= 0 && v <= max {
+			out = append(out, v)
 		}
 	}
 	return out
+}
+
+func CartesianProduct[T any](s1, s2 []T) [][]T {
+	capacity := len(s1) * len(s2)
+	product := make([][]T, 0, capacity)
+	for _, v1 := range s1 {
+		for _, v2 := range s2 {
+			product = append(product, []T{v1, v2})
+		}
+	}
+	return product
 }
