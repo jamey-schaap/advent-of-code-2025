@@ -1,6 +1,7 @@
 package main
 
 import (
+	"advent-of-code-2025/utils"
 	"fmt"
 	"io"
 	"log"
@@ -55,8 +56,8 @@ func GetInvalidIds(r string) []int {
 		panic(err)
 	}
 
-	idRange := GetRange(start, end+1)
-	invalidIds := Filter(idRange, func(id int) bool {
+	idRange := utils.GetRange(start, end+1)
+	invalidIds := utils.Filter(idRange, func(_, id int) bool {
 		s := strconv.Itoa(id)
 		return !IsValidId(s)
 	})
@@ -79,7 +80,7 @@ func IsValidId(id string) bool {
 		}
 
 		parts, _ := EvenlySplitString(id, size)
-		if AllEqual(parts...) {
+		if utils.AllEqual(parts...) {
 			return false
 		}
 	}
@@ -104,44 +105,4 @@ func EvenlySplitString(str string, size int) ([]string, error) {
 		parts = append(parts, substr)
 	}
 	return parts, nil
-}
-
-func GetRange(start, end int) []int {
-	return GetRangeWithStep(start, end, 1)
-}
-
-func GetRangeWithStep(start, end, step int) []int {
-	if start > end {
-		start, end = end, start
-	}
-
-	r := make([]int, 0, end-start+1)
-	for i := start; i < end; i += step {
-		r = append(r, i)
-	}
-	return r
-}
-
-func Filter[T any](items []T, f func(item T) bool) []T {
-	var out []T
-	for _, item := range items {
-		if f(item) {
-			out = append(out, item)
-		}
-	}
-	return out
-}
-
-func AllEqual[T comparable](values ...T) bool {
-	if len(values) < 2 {
-		return true
-	}
-
-	first := values[0]
-	for _, v := range values[1:] {
-		if v != first {
-			return false
-		}
-	}
-	return true
 }

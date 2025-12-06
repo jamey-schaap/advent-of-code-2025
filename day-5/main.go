@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -16,7 +17,8 @@ func main() {
 	}
 	defer f.Close()
 
-	answer, err := GetAnswer(f)
+	//answer, err := GetAnswerPart1(f)
+	answer, err := GetAnswerPart2(f)
 	if err != nil {
 		panic(err)
 	}
@@ -27,7 +29,7 @@ type IdRange struct {
 	min, max int
 }
 
-func GetAnswer(r io.Reader) (int, error) {
+func GetAnswerPart1(r io.Reader) (int, error) {
 	scanner := bufio.NewScanner(r)
 	var ranges []IdRange
 	for scanner.Scan() {
@@ -60,6 +62,84 @@ func GetAnswer(r io.Reader) (int, error) {
 		}
 	}
 	return cnt, nil
+}
+
+func GetAnswerPart2(r io.Reader) (int, error) {
+	scanner := bufio.NewScanner(r)
+	var ranges []IdRange
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" {
+			break
+		}
+
+		idRange, err := ParseRangeFromString(line)
+		if err != nil {
+			return 0, nil
+		}
+		ranges = append(ranges, *idRange)
+	}
+
+	ranges = SquashIdRanges(ranges)
+
+	result := 0
+	for _, r := range ranges {
+		result += r.max - r.min + 1 // to account for the upper boundary which is inclusive
+	}
+
+	return result, nil
+}
+
+func SquashIdRanges(ranges []IdRange) []IdRange {
+	var out []IdRange
+	var squashedCnt int
+	in := ranges
+
+	for {
+		out, squashedCnt = SquashIdRangesOnce(in)
+		if squashedCnt == 0 {
+			break
+		}
+		in = out
+	}
+
+	return out
+}
+
+func SquashIdRangesOnce(ranges []IdRange) ([]IdRange, int) {
+	out := make([]IdRange, 0)
+	checkedIndexes := make([]int, 0)
+	squashedCnt := 0
+
+	for idxA, a := range ranges {
+		rangeToAdd := a
+		if slices.Contains(checkedIndexes, idxA) {
+			continue
+		}
+
+		for idxB, b := range ranges {
+			if idxA == idxB || slices.Contains(checkedIndexes, idxB) {
+				continue
+			}
+
+			// a.min in b.min .. b.max or b.min in a.min .. a.max
+			if (b.min <= a.min && a.min <= b.max) ||
+				a.min <= b.min && b.min <= a.max {
+				rangeToAdd = IdRange{
+					min: min(a.min, b.min),
+					max: max(a.max, b.max),
+				}
+				checkedIndexes = append(checkedIndexes, idxB)
+				squashedCnt++
+				break
+			}
+		}
+
+		out = append(out, rangeToAdd)
+		checkedIndexes = append(checkedIndexes, idxA)
+	}
+
+	return out, squashedCnt
 }
 
 func ParseRangeFromString(text string) (*IdRange, error) {
